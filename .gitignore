@@ -8,6 +8,9 @@ objects.list
 *.bin
 *makefile
 *.mk
+*.ld
+*.list
+*.map
 *.cproject
 *.project
 *.launch
