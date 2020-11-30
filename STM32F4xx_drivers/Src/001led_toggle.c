@@ -4,8 +4,8 @@
  *  Created on: 30-Nov-2020
  *      Author: Sayan Rana
  * For more details check	:	 STM32F4xx_drivers/drivers/inc/stm32f407xx.h
- * 							:	 STM32F4xx_drivers/drivers/inc/stm32f407xx_GPIO_driver.h
- * 							:	 STM32F4xx_drivers/drivers/src/stm32f407xx_GPIO_driver.c
+ * 				:	 STM32F4xx_drivers/drivers/inc/stm32f407xx_GPIO_driver.h
+ * 				:	 STM32F4xx_drivers/drivers/src/stm32f407xx_GPIO_driver.c
  */
 
 #include "stm32f407xx.h"
