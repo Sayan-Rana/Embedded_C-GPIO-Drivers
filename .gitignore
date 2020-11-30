@@ -1,0 +1,13 @@
+.settings/
+*.d
+*.o
+*.su
+*.s
+Startup/
+objects.list
+*.bin
+*makefile
+*.mk
+*.cproject
+*.project
+*.launch
