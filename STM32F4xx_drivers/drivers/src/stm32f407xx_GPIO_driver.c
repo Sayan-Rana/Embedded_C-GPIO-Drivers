@@ -120,6 +120,55 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 	}else{
 		// Interrupt mode
 
+		// 1. Selecting the pin mode as input
+		pGPIOHandle->pGPIOx->MODER &= ~(0x01 << (2 * pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber) );
+
+		// 2. Triggering selection
+		if(pGPIOHandle->GPIO_PinConfig.GPIO_PinMode == GPIO_MODE_INT_FT)
+		{
+			// 2.1 Configure the FTSR(Falling trigger selection register)
+			EXTI->EXTI_FTSR &= ~(1 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);	// First, clearing the bit
+			EXTI->EXTI_FTSR |= (1 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);	// Second, setting the bit
+
+			// Make sure that RTSR is clear.
+			EXTI->EXTI_RTSR &= ~(1 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);
+
+		}else if(pGPIOHandle->GPIO_PinConfig.GPIO_PinMode == GPIO_MODE_INT_RT)
+		{
+			// 2.2 Configure the RTSR(Rising trigger selection register)
+			EXTI->EXTI_RTSR &= ~(1 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);	// First, clearing the bit
+			EXTI->EXTI_RTSR |= (1 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);	// Second, setting the bit
+
+			// Make sure that FTSR is clear.
+			EXTI->EXTI_FTSR &= ~(1 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);
+
+		}else if(pGPIOHandle->GPIO_PinConfig.GPIO_PinMode == GPIO_MODE_INT_RFT)
+		{
+			// 2.3 Configure both FTSR and RTSR
+			EXTI->EXTI_FTSR &= ~(1 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);	// First, clearing the bit
+			EXTI->EXTI_RTSR &= ~(1 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);	// First, clearing the bit
+
+
+			EXTI->EXTI_FTSR |= (1 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);	// Second, setting the bit
+			EXTI->EXTI_RTSR |= (1 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);	// Second, setting the bit
+		}
+
+		// 3. Configure the GPIO port selection in SYSCFG_EXTICR
+		uint8_t reg = (pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber / 4);
+		uint8_t bitPosi = ((pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber % 4) * 4);
+
+		// Enable the SYSCFG peripheral clock
+		SYSCFG_PCLK_EN();
+
+		// Generating desired port code
+		uint8_t portcode = GPIO_BASEADDR_to_CODE(pGPIOHandle->pGPIOx);
+
+		// Setting relevant bit position inside EXTICR
+		SYSCFG->EXTICR[reg] = (portcode << bitPosi);
+
+		// 4. Enable the External Interrupt(EXTI) delivery using IMR(Interrupt mask register)
+		EXTI->EXTI_IMR &= ~(1 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);	// First, clearing the bit
+		EXTI->EXTI_IMR |= (1 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);	// Second, setting the bit
 	}
 
 	temp = 0;
@@ -319,7 +368,7 @@ void GPIO_ToggleOutputPin(GPIO_RegDef_t *pGPIOx, uint8_t PinNumber)
  *	@fn                  - GPIO_IRQConfig
  *
  *	@brief               - This function will configure the IRQ by selecting IRQ number, IRQ priority and
- *						   IRQ status(either on or off)
+ *						   IRQ status(either on or off) inside processor(NVIC)
  *
  *	@param[in]           - IRQ number which will execute
  *	@param[in]           - IRQ priority number

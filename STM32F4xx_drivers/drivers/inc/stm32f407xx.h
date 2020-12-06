@@ -134,6 +134,34 @@ typedef struct
 }RCC_RegDef_t;
 
 
+/*
+ * This structure is only for STM32F407VG microcontroller APB2 Bus EXTI peripheral
+ */
+
+typedef struct
+{
+	__vo uint32_t EXTI_IMR;					/* EXTI Interrupt mask register,							Address offset : 0x00 */
+	__vo uint32_t EXTI_EMR;					/* EXTI Event mask register,								Address offset : 0x04 */
+	__vo uint32_t EXTI_RTSR;					/* EXTI Rising trigger selection register,					Address offset : 0x08 */
+	__vo uint32_t EXTI_FTSR;					/* EXTI Falling trigger selection register,					Address offset : 0x0C */
+	__vo uint32_t EXTI_SWIER;				/* EXTI Software interrupt event register,					Address offset : 0x10 */
+	__vo uint32_t EXTI_PR;					/* EXTI Pending register,									Address offset : 0x14 */
+}EXTI_RegDef_t;
+
+
+/*
+ * This structure is only for STM32F407VG microcontroller APB2 Bus SYSCFG peripheral
+ */
+
+typedef struct
+{
+	__vo uint32_t MEMRMP;					/* SYSCFG memory remap register,																		Address offset : 0x00 */
+	__vo uint32_t PMC;						/* SYSCFG peripheral mode configuration register,														Address offset : 0x04 */
+	__vo uint32_t EXTICR[4];				/* SYSCFG external interrupt configuration register [0] =reg1, [1] = reg2, [2] = reg3, [3] = reg4,		Address offset : 0x08 */
+	__vo uint32_t CMPCR;					/* SYSCFG Compensation cell control register,															Address offset : 0x0C */
+
+}SYSCFG_RegDef_t;
+
 
 /*
  * Peripheral definition (Peripheral base addresses tpyecasted to xxx_RegDef_t)
@@ -152,6 +180,12 @@ typedef struct
 
 //RCC
 #define RCC								((RCC_RegDef_t*) RCC_BASEADDR)
+
+//EXTI
+#define EXTI							((EXTI_RegDef_t*) EXTI_BASEADDR)
+
+//SYSCFG
+#define SYSCFG							((SYSCFG_RegDef_t*) SYSCFG_BASEADDR)
 
 
 /*
@@ -256,17 +290,44 @@ typedef struct
 
 /*
  * Macros to reset GPIOx peripherals
+ * Using do while condition zero loop
  */
-#define GPIOA_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 0);	RCC->AHB1RSTR &= ~(1 << 0);	}while(0)			/*Do while condition zero loop*/
-#define GPIOB_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 1);	RCC->AHB1RSTR &= ~(1 << 1);	}while(0)			/*Do while condition zero loop*/
-#define GPIOC_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 2);	RCC->AHB1RSTR &= ~(1 << 2);	}while(0)			/*Do while condition zero loop*/
-#define GPIOD_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 3);	RCC->AHB1RSTR &= ~(1 << 3);	}while(0)			/*Do while condition zero loop*/
-#define GPIOE_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 4);	RCC->AHB1RSTR &= ~(1 << 4);	}while(0)			/*Do while condition zero loop*/
-#define GPIOF_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 5);	RCC->AHB1RSTR &= ~(1 << 5);	}while(0)			/*Do while condition zero loop*/
-#define GPIOG_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 6);	RCC->AHB1RSTR &= ~(1 << 6);	}while(0)			/*Do while condition zero loop*/
-#define GPIOH_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 7);	RCC->AHB1RSTR &= ~(1 << 7);	}while(0)			/*Do while condition zero loop*/
-#define GPIOI_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 8);	RCC->AHB1RSTR &= ~(1 << 8);	}while(0)			/*Do while condition zero loop*/
+#define GPIOA_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 0);	RCC->AHB1RSTR &= ~(1 << 0);	}while(0)			/* By setting the bit position we can reset(disable) the GPIOx peripheral clock */
+#define GPIOB_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 1);	RCC->AHB1RSTR &= ~(1 << 1);	}while(0)						/* and after that we must have to clear the bit position */
+#define GPIOC_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 2);	RCC->AHB1RSTR &= ~(1 << 2);	}while(0)
+#define GPIOD_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 3);	RCC->AHB1RSTR &= ~(1 << 3);	}while(0)
+#define GPIOE_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 4);	RCC->AHB1RSTR &= ~(1 << 4);	}while(0)
+#define GPIOF_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 5);	RCC->AHB1RSTR &= ~(1 << 5);	}while(0)
+#define GPIOG_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 6);	RCC->AHB1RSTR &= ~(1 << 6);	}while(0)
+#define GPIOH_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 7);	RCC->AHB1RSTR &= ~(1 << 7);	}while(0)
+#define GPIOI_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 8);	RCC->AHB1RSTR &= ~(1 << 8);	}while(0)
 
+
+/*
+ * Macro to convert GPIO base address to port code of SYSCFG external interrupt configuration register
+ */
+#define GPIO_BASEADDR_to_CODE(x)				  ( (x == GPIOA)?0:\
+													(x == GPIOB)?1:\
+													(x == GPIOC)?2:\
+													(x == GPIOD)?3:\
+													(x == GPIOE)?4:\
+													(x == GPIOF)?5:\
+													(x == GPIOG)?6:\
+													(x == GPIOH)?7:\
+													(x == GPIOI)?8:0 )
+
+
+/*
+ * IRQ(Interrupt Request) Numbers of STM32F407x MCU
+ */
+
+#define IRQ_NO_EXTI0				6
+#define IRQ_NO_EXTI1				7
+#define	IRQ_NO_EXTI2				8
+#define IRQ_NO_EXTI3				9
+#define IRQ_NO_EXTI4				10
+#define IRQ_NO_EXTI9_5				23
+#define IRQ_NO_EXTI15_10			40
 
 
 /*
@@ -284,10 +345,3 @@ typedef struct
 
 
 #endif /* INC_STM32F407XX_H_ */
-
-
-
-
-
-
-
