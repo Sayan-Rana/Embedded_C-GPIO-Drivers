@@ -104,21 +104,21 @@ typedef struct
  * GPIO possible alternate functions
  */
 #define GPIO_ALTFN_AF0							0		//Alternate Function 0
-#define GPIO_ALTFN_AF1							1		//Alternate Function 0
-#define GPIO_ALTFN_AF2							2		//Alternate Function 0
-#define GPIO_ALTFN_AF3							3		//Alternate Function 0
-#define GPIO_ALTFN_AF4							4		//Alternate Function 0
-#define GPIO_ALTFN_AF5							5		//Alternate Function 0
-#define GPIO_ALTFN_AF6							6		//Alternate Function 0
-#define GPIO_ALTFN_AF7							7		//Alternate Function 0
-#define GPIO_ALTFN_AF8							8		//Alternate Function 0
-#define GPIO_ALTFN_AF9							9		//Alternate Function 0
-#define GPIO_ALTFN_AF10							10		//Alternate Function 0
-#define GPIO_ALTFN_AF11							11		//Alternate Function 0
-#define GPIO_ALTFN_AF12							12		//Alternate Function 0
-#define GPIO_ALTFN_AF13							13		//Alternate Function 0
-#define GPIO_ALTFN_AF14							14		//Alternate Function 0
-#define GPIO_ALTFN_AF15							15		//Alternate Function 0
+#define GPIO_ALTFN_AF1							1		//Alternate Function 1
+#define GPIO_ALTFN_AF2							2		//Alternate Function 2
+#define GPIO_ALTFN_AF3							3		//Alternate Function 3
+#define GPIO_ALTFN_AF4							4		//Alternate Function 4
+#define GPIO_ALTFN_AF5							5		//Alternate Function 5
+#define GPIO_ALTFN_AF6							6		//Alternate Function 6
+#define GPIO_ALTFN_AF7							7		//Alternate Function 7
+#define GPIO_ALTFN_AF8							8		//Alternate Function 8
+#define GPIO_ALTFN_AF9							9		//Alternate Function 9
+#define GPIO_ALTFN_AF10							10		//Alternate Function 10
+#define GPIO_ALTFN_AF11							11		//Alternate Function 11
+#define GPIO_ALTFN_AF12							12		//Alternate Function 12
+#define GPIO_ALTFN_AF13							13		//Alternate Function 13
+#define GPIO_ALTFN_AF14							14		//Alternate Function 14
+#define GPIO_ALTFN_AF15							15		//Alternate Function 15
 
 
 
@@ -160,5 +160,4 @@ void GPIO_IRQHandling(uint8_t PinNumber);
 
 
 #endif /* INC_STM32F407XX_GPIO_DRIVER_H_ */
-
 

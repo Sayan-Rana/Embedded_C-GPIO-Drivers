@@ -8,9 +8,11 @@
 #ifndef INC_STM32F407XX_H_
 #define INC_STM32F407XX_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #define __vo				volatile
+#define __weak				__attribute__((weak))
 
 /******************************************** START : Processor Specific Details *************************************************
  *
@@ -53,7 +55,7 @@
 
 
 /*
- * BAse address of Flash and SRAM memories
+ * Base address of Flash and SRAM memories
  */
 
 #define FLASH_BASEADDR					0x08000000U							// Base address of flash memory
@@ -110,6 +112,9 @@
  */
 
 #define SPI1_BASEADDR					(APB2PERIPH_BASEADDR + 0x3000)		// Base address of APB2 bus peripherals + offset SPI1
+#define SPI4_BASEADDR					(APB2PERIPH_BASEADDR + 0x3400)		// Base address of APB2 bus peripherals + offset SPI4
+#define SPI5_BASEADDR					(APB2PERIPH_BASEADDR + 0x5000)		// Base address of APB2 bus peripherals + offset SPI5
+#define SPI6_BASEADDR					(APB2PERIPH_BASEADDR + 0x5400)		// Base address of APB2 bus peripherals + offset SPI6
 #define USART1_BASEADDR					(APB2PERIPH_BASEADDR + 0x1000)		// Base address of APB2 bus peripherals + offset USART1
 #define USART6_BASEADDR					(APB2PERIPH_BASEADDR + 0x1400)		// Base address of APB2 bus peripherals + offset USART6
 #define EXTI_BASEADDR					(APB2PERIPH_BASEADDR + 0x3C00)		// Base address of APB2 bus peripherals + offset EXT Interrupt
@@ -120,7 +125,6 @@
 /*
  * This structure is only for STM32F407VG microcontroller AHB1 Bus GPIO peripheral
  */
-
 typedef struct
 {
 	__vo uint32_t MODER;				/* GPIO port mode register,																					 Address offset : 0x00 */
@@ -138,7 +142,6 @@ typedef struct
 /*
  * This structure is only for STM32F407VG microcontroller AHB1 Bus RCC peripheral
  */
-
 typedef struct
 {
 	__vo uint32_t CR;					/* RCC clock control register,					Address offset : 0x00 */
@@ -177,13 +180,12 @@ typedef struct
 /*
  * This structure is only for STM32F407VG microcontroller APB2 Bus EXTI peripheral
  */
-
 typedef struct
 {
 	__vo uint32_t EXTI_IMR;					/* EXTI Interrupt mask register,							Address offset : 0x00 */
 	__vo uint32_t EXTI_EMR;					/* EXTI Event mask register,								Address offset : 0x04 */
-	__vo uint32_t EXTI_RTSR;					/* EXTI Rising trigger selection register,					Address offset : 0x08 */
-	__vo uint32_t EXTI_FTSR;					/* EXTI Falling trigger selection register,					Address offset : 0x0C */
+	__vo uint32_t EXTI_RTSR;				/* EXTI Rising trigger selection register,					Address offset : 0x08 */
+	__vo uint32_t EXTI_FTSR;				/* EXTI Falling trigger selection register,					Address offset : 0x0C */
 	__vo uint32_t EXTI_SWIER;				/* EXTI Software interrupt event register,					Address offset : 0x10 */
 	__vo uint32_t EXTI_PR;					/* EXTI Pending register,									Address offset : 0x14 */
 }EXTI_RegDef_t;
@@ -192,7 +194,6 @@ typedef struct
 /*
  * This structure is only for STM32F407VG microcontroller APB2 Bus SYSCFG peripheral
  */
-
 typedef struct
 {
 	__vo uint32_t MEMRMP;					/* SYSCFG memory remap register,																		Address offset : 0x00 */
@@ -201,6 +202,23 @@ typedef struct
 	uint32_t 	  RESERVED1[2];
 	__vo uint32_t CMPCR;					/* SYSCFG Compensation cell control register,															Address offset : 0x0C */
 }SYSCFG_RegDef_t;
+
+
+/*
+ * This structure is only for STM32F407VG microcontroller SPIx peripheral
+ */
+typedef struct
+{
+	__vo uint32_t CR1;					/* SPI control register 1,							Address offset : 0x00 */
+	__vo uint32_t CR2;					/* SPI control register 2,							Address offset : 0x04 */
+	__vo uint32_t SR;					/* SPI status register,								Address offset : 0x08 */
+	__vo uint32_t DR;					/* SPI data register,								Address offset : 0x0C */
+	__vo uint32_t CRCPR;				/* SPI CRC polynomial register,						Address offset : 0x10 */
+	__vo uint32_t RXCRCR;				/* SPI RX CRC register,								Address offset : 0x14 */
+	__vo uint32_t TXCRCR;				/* SPI_I2S configuration register,					Address offset : 0x18 */
+	__vo uint32_t I2SCFGR;				/* SPI_I2S configuration register,					Address offset : 0x1C */
+	__vo uint32_t I2SPR;				/* SPI_I2S prescaler register,						Address offset : 0x20 */
+}SPI_RegDef_t;
 
 
 /*
@@ -226,6 +244,11 @@ typedef struct
 
 //SYSCFG
 #define SYSCFG							((SYSCFG_RegDef_t*) SYSCFG_BASEADDR)
+
+//SPI
+#define SPI1							((SPI_RegDef_t*) SPI1_BASEADDR)
+#define SPI2							((SPI_RegDef_t*) SPI2_BASEADDR)
+#define SPI3							((SPI_RegDef_t*) SPI3_BASEADDR)
 
 
 /*
@@ -276,6 +299,7 @@ typedef struct
  */
 
 #define SYSCFG_PCLK_EN()				(RCC->APB2ENR |= (1 << 14))
+
 
 
 /*
@@ -344,6 +368,15 @@ typedef struct
 
 
 /*
+ * Macros to reset SPIx peripherals
+ * Using do while condition zero loop
+ */
+#define SPI1_REG_RESET()	do{	RCC->APB2RSTR |= (1 << 12);	RCC->AHB1RSTR &= ~(1 << 12);	}while(0)			/* By setting the bit position we can reset(disable) the SPIx peripheral clock */
+#define SPI2_REG_RESET()	do{	RCC->APB1RSTR |= (1 << 14);	RCC->AHB1RSTR &= ~(1 << 14);	}while(0)						/* and after that we must have to clear the bit position */
+#define SPI3_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 15);	RCC->AHB1RSTR &= ~(1 << 15);	}while(0)
+
+
+/*
  * Macro to convert GPIO base address to port code of SYSCFG external interrupt configuration register
  */
 #define GPIO_BASEADDR_to_CODE(x)				  ( (x == GPIOA)?0:\
@@ -358,7 +391,7 @@ typedef struct
 
 
 /*
- * IRQ(Interrupt Request) Numbers of STM32F407x MCU
+ * IRQ(Interrupt Request) Numbers  of EXTI interrupts asper STM32F407x MCU Vector table
  */
 
 #define IRQ_NO_EXTI0				6
@@ -368,6 +401,15 @@ typedef struct
 #define IRQ_NO_EXTI4				10
 #define IRQ_NO_EXTI9_5				23
 #define IRQ_NO_EXTI15_10			40
+
+
+/*
+ * IRQ(Interrupt Request) Numbers  of SPI interrupts asper STM32F407x MCU Vector table
+ */
+
+#define IRQ_NO_SPI1					35
+#define IRQ_NO_SPI2					36
+#define	IRQ_NO_SPI3					51
 
 
 /*
@@ -402,8 +444,68 @@ typedef struct
 #define RESET						DISABLE
 #define GPIO_PIN_SET				SET
 #define GPIO_PIN_RESET				RESET
+#define FLAG_RESET					RESET
+#define FLAG_SET					SET
+
+
+/*************************************************************************************************************
+ * Bit position definition of SPI peripheral registers
+ ************************************************************************************************************/
+//CR1
+#define SPI_CR1_CPHA												0
+#define SPI_CR1_CPOL												1
+#define SPI_CR1_MSTR												2
+#define SPI_CR1_BR													3
+#define SPI_CR1_SPE													6
+#define SPI_CR1_LSBFIRST											7
+#define SPI_CR1_SSI													8
+#define SPI_CR1_SSM													9
+#define SPI_CR1_RXONLY												10
+#define SPI_CR1_DFF													11
+#define SPI_CR1_CRCNEXT												12
+#define SPI_CR1_CRCEN												13
+#define SPI_CR1_BIDIOE												14
+#define SPI_CR1_BIDIMODE											15
+
+//CR2
+#define SPI_CR2_RXDMAEN												0
+#define SPI_CR2_TXDMAEN												1
+#define SPI_CR2_SSOE												2
+#define SPI_CR2_FRF													4
+#define SPI_CR2_ERRIE												5
+#define SPI_CR2_RXNEIE												6
+#define SPI_CR2_TXEIE												7
+
+//SR
+#define SPI_SR_RXNE													0
+#define SPI_SR_TXE													1
+#define SPI_SR_CHSIDE												2
+#define SPI_SR_UDR													3
+#define SPI_SR_CRCERR												4
+#define SPI_SR_MODF													5
+#define SPI_SR_OVR													6
+#define SPI_SR_BSY													7
+#define SPI_SR_FRE													8
+
+//I2SCFGR
+#define SPI_I2SCFGR_CHLEN											0
+#define SPI_I2SCFGR_DATLEN											1
+#define SPI_I2SCFGR_CKPOL											3
+#define SPI_I2SCFGR_I2SSTD											4
+#define SPI_I2SCFGR_PCMSYNC											7
+#define SPI_I2SCFGR_I2SCFG											8
+#define SPI_I2SCFGR_I2SE											10
+#define SPI_I2SCFGR_I2SMOD											11
+
+//I2SPR
+#define SPI_I2SPR_I2SDIV											0
+#define SPI_I2SPR_ODD												8
+#define SPI_I2SPR_MCKOE												9
+
+
 
 #include "stm32f407xx_GPIO_driver.h"
+#include "stm32f407xx_SPI_driver.h"
 
 
 #endif /* INC_STM32F407XX_H_ */

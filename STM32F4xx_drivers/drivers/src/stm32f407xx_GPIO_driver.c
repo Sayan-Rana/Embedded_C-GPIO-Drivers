@@ -98,7 +98,7 @@ void GPIO_PeriClockControl(GPIO_RegDef_t *pGPIOx, uint8_t EnOrDis)
  *
  *	@brief               - This function will initialize a given GPIO port
  *
- *	@param[in]           -
+ *	@param[in]           - Will take the handle structure address
  *
  *	@return              - none
  *
@@ -107,6 +107,9 @@ void GPIO_PeriClockControl(GPIO_RegDef_t *pGPIOx, uint8_t EnOrDis)
  */
 void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 {
+	// Enable the peripheral clock
+	GPIO_PeriClockControl(pGPIOHandle->pGPIOx, ENABLE);
+
 	uint32_t temp = 0; 			// Temp. register
 
 	// 1. Configure the mode of GPIO pin
@@ -212,7 +215,7 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
  *
  *	@brief               - This function will de-initialize a given GPIO port
  *
- *	@param[in]           -
+ *	@param[in]           - Will take the corresponding Peripheral address
  *
  *	@return              - none
  *
@@ -365,13 +368,12 @@ void GPIO_ToggleOutputPin(GPIO_RegDef_t *pGPIOx, uint8_t PinNumber)
 
 
 /****************************************************************************************
- *	@fn                  - GPIO_IRQConfig
+ *	@fn                  - GPIO_IRQ_IntConfig
  *
  *	@brief               - This function will configure the IRQ by selecting IRQ number, IRQ priority and
  *						   IRQ status(either on or off) inside processor(NVIC)
  *
  *	@param[in]           - IRQ number which will execute
- *	@param[in]           - IRQ priority number
  *	@param[in]           - IRQ SET or RESET macro
  *
  *	@return              - none
@@ -461,4 +463,3 @@ void GPIO_IRQHandling(uint8_t PinNumber)
 		EXTI->EXTI_PR |= (1 << PinNumber);
 	}
 }
-
