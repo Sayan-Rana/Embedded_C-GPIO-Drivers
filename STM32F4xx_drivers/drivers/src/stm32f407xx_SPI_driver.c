@@ -159,10 +159,9 @@ void SPI_DeInit(SPI_RegDef_t *pSPIx)
  *	@brief               - This function will return the flag status of status register
  *
  *	@param[in]           - Base address of the SPI peripheral
- *	@param[in]           - Address of the data (type casted to (uint8_t*)) which we want to send to the slave
- *	@param[in]           - Size of the data which we want to send to the slave
+ *	@param[in]           - Name of the status flag that we want to check
  *
- *	@return              - none
+ *	@return              - Either flag reset or set
  *
  *	@note                - none
  *

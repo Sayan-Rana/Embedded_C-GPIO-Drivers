@@ -222,6 +222,24 @@ typedef struct
 
 
 /*
+ * This structure is only for STM32F407VG microcontroller I2Cx peripheral
+ */
+typedef struct
+{
+	__vo uint32_t I2C_CR1;				/* I2C Control register 1,							Address offset : 0x00 */
+	__vo uint32_t I2C_CR2;				/* I2C Control register 2,							Address offset : 0x04 */
+	__vo uint32_t I2C_OAR1;				/* I2C Own address register 1,						Address offset : 0x08 */
+	__vo uint32_t I2C_OAR2;				/* I2C Own address register 2,						Address offset : 0x0C */
+	__vo uint32_t I2C_DR;				/* I2C Data register,								Address offset : 0x10 */
+	__vo uint32_t I2C_SR1;				/* I2C Status register 1,							Address offset : 0x14 */
+	__vo uint32_t I2C_SR2;				/* I2C Status register 2,							Address offset : 0x18 */
+	__vo uint32_t I2C_CCR;				/* I2C Clock control register,						Address offset : 0x1C */
+	__vo uint32_t I2C_TRISE;			/* I2C_TRISE register,								Address offset : 0x20 */
+	__vo uint32_t I2C_FLTR;				/* I2C_FLTR register,								Address offset : 0x24 */
+}I2C_RegDef_t;
+
+
+/*
  * Peripheral definition (Peripheral base addresses tpyecasted to xxx_RegDef_t)
  */
 
@@ -249,6 +267,11 @@ typedef struct
 #define SPI1							((SPI_RegDef_t*) SPI1_BASEADDR)
 #define SPI2							((SPI_RegDef_t*) SPI2_BASEADDR)
 #define SPI3							((SPI_RegDef_t*) SPI3_BASEADDR)
+
+// I2C
+#define I2C1							((I2C_RegDef_t*) I2C1_BASEADDR)
+#define I2C2							((I2C_RegDef_t*) I2C2_BASEADDR)
+#define I2C3							((I2C_RegDef_t*) I2C3_BASEADDR)
 
 
 /*
@@ -353,11 +376,11 @@ typedef struct
 
 
 /*
- * Macros to reset GPIOx peripherals
+ * Macros to reset GPIOx peripheral
  * Using do while condition zero loop
  */
 #define GPIOA_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 0);	RCC->AHB1RSTR &= ~(1 << 0);	}while(0)			/* By setting the bit position we can reset(disable) the GPIOx peripheral clock */
-#define GPIOB_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 1);	RCC->AHB1RSTR &= ~(1 << 1);	}while(0)						/* and after that we must have to clear the bit position */
+#define GPIOB_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 1);	RCC->AHB1RSTR &= ~(1 << 1);	}while(0)			/* and after that we must have to clear the bit position */
 #define GPIOC_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 2);	RCC->AHB1RSTR &= ~(1 << 2);	}while(0)
 #define GPIOD_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 3);	RCC->AHB1RSTR &= ~(1 << 3);	}while(0)
 #define GPIOE_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 4);	RCC->AHB1RSTR &= ~(1 << 4);	}while(0)
@@ -368,12 +391,21 @@ typedef struct
 
 
 /*
- * Macros to reset SPIx peripherals
+ * Macros to reset SPIx peripheral
  * Using do while condition zero loop
  */
-#define SPI1_REG_RESET()	do{	RCC->APB2RSTR |= (1 << 12);	RCC->AHB1RSTR &= ~(1 << 12);	}while(0)			/* By setting the bit position we can reset(disable) the SPIx peripheral clock */
-#define SPI2_REG_RESET()	do{	RCC->APB1RSTR |= (1 << 14);	RCC->AHB1RSTR &= ~(1 << 14);	}while(0)						/* and after that we must have to clear the bit position */
-#define SPI3_REG_RESET()	do{	RCC->AHB1RSTR |= (1 << 15);	RCC->AHB1RSTR &= ~(1 << 15);	}while(0)
+#define SPI1_REG_RESET()	do{	RCC->APB2RSTR |= (1 << 12);	RCC->APB2RSTR &= ~(1 << 12);	}while(0)			/* By setting the bit position we can reset(disable) the SPIx peripheral clock */
+#define SPI2_REG_RESET()	do{	RCC->APB1RSTR |= (1 << 14);	RCC->APB1RSTR &= ~(1 << 14);	}while(0)			/* and after that we must have to clear the bit position */
+#define SPI3_REG_RESET()	do{	RCC->APB1RSTR |= (1 << 15);	RCC->APB1RSTR &= ~(1 << 15);	}while(0)
+
+
+/*
+ * Macros to reset I2Cx peripheral
+ * Using do while condition zero loop
+ */
+#define I2C1_REG_RESET()	do{	RCC->APB1RSTR |= (1 << 21);	RCC->APB1RSTR &= ~(1 << 21);	}while(0)			/* By setting the bit position we can reset(disable) the I2Cx peripheral clock */
+#define I2C2_REG_RESET()	do{	RCC->APB1RSTR |= (1 << 22);	RCC->APB1RSTR &= ~(1 << 22);	}while(0)			/* and after that we must have to clear the bit position */
+#define I2C3_REG_RESET()	do{	RCC->APB1RSTR |= (1 << 23);	RCC->APB1RSTR &= ~(1 << 23);	}while(0)
 
 
 /*
@@ -503,9 +535,85 @@ typedef struct
 #define SPI_I2SPR_MCKOE												9
 
 
+/*************************************************************************************************************
+ * Bit position definition of I2C peripheral registers
+ ************************************************************************************************************/
+//I2C_CR1
+#define I2C_CR1_PE													0
+#define I2C_CR1_SMBUS												1
+#define I2C_CR1_SMBTYPE												3
+#define I2C_CR1_ENARP												4
+#define I2C_CR1_ENPEC												5
+#define I2C_CR1_ENGC												6
+#define I2C_CR1_NOSTRETCH											7
+#define I2C_CR1_START												8
+#define I2C_CR1_STOP												9
+#define I2C_CR1_ACK													10
+#define I2C_CR1_POS													11
+#define I2C_CR1_PEC													12
+#define I2C_CR1_ALERT												13
+#define I2C_CR1_SWRST												15
+
+//I2C_CR2
+#define I2C_CR2_FREQ												0
+#define I2C_CR2_ITERREN												8
+#define I2C_CR2_ITEVTEN												9
+#define I2C_CR2_ITBUFEN												10
+#define I2C_CR2_DMAEN												11
+#define I2C_CR2_LAST												12
+
+//I2C_OAR1
+#define I2C_OAR1_ADD0												0
+#define I2C_OAR1_ADD7_1												1
+#define I2C_OAR1_ADD9_8												8
+#define I2C_OAR1_ADDMODE											15
+
+//I2C_OAR2
+#define I2C_OAR2_ENDUAL												0
+#define I2C_OAR2_ADD27_1											1
+
+//I2C_SR1
+#define I2C_SR1_SB													0
+#define I2C_SR1_ADDR												1
+#define I2C_SR1_BTF													2
+#define I2C_SR1_ADD10												3
+#define I2C_SR1_STOPF												4
+#define I2C_SR1_RxNE												6
+#define I2C_SR1_TxE													7
+#define I2C_SR1_BERR												8
+#define I2C_SR1_ARLO												9
+#define I2C_SR1_AF													10
+#define I2C_SR1_OVR													11
+#define I2C_SR1_PECERR												12
+#define I2C_SR1_TIMEOUT												14
+#define I2C_SR1_SMBALERT											15
+
+//I2C_SR2
+#define I2C_SR2_MSL													0
+#define I2C_SR2_BUSY												1
+#define I2C_SR2_TRA													2
+#define I2C_SR2_GENCALL												4
+#define I2C_SR2_SMBDEFAULT											5
+#define I2C_SR2_SMBHOST												6
+#define I2C_SR2_DUALF												7
+#define I2C_SR2_PEC													8
+
+//I2C_CCR
+#define I2C_CCR_CCR11_0												0
+#define I2C_CCR_DUTY												14
+#define I2C_CCR_F_OR_S												15
+
+//I2C_TRISE
+#define I2C_TRISE_TRISE5_0											0
+
+//I2C_FLTR
+#define I2C_FLTR_DNF												0
+#define I2C_FLTR_ANOFF												4
+
 
 #include "stm32f407xx_GPIO_driver.h"
 #include "stm32f407xx_SPI_driver.h"
+#include "stm32f407xx_I2C_driver.h"
 
 
 #endif /* INC_STM32F407XX_H_ */
