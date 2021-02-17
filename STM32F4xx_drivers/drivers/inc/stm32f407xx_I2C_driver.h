@@ -31,6 +31,14 @@ typedef struct
 {
 	I2C_RegDef_t 	*pI2Cx;				/*!< This holds the base address of I2Cx(1,2,3) peripheral >*/
 	I2C_Config_t 	I2C_Config;			/*!< This holds I2C peripheral configuration settings >*/
+	uint8_t 		*pTxBuffer;			/*!< To store the application Tx Buffer address >*/
+	uint8_t			*pRxBuffer;			/*!< To store the application Rx buffer address >*/
+	uint32_t		TxLen;				/*!< To store Tx length >*/
+	uint32_t		RxLen;				/*!< To store Rx length >*/
+	uint8_t			TxRxState;			/*!< To store communication state @I2C_application_state >*/
+	uint8_t			DevAddr;			/*!< To store slave/device address >*/
+	uint32_t		RxSize;				/*!< To store Rx size >*/
+	uint8_t			Sr;					/*!< To store repeated start value >*/
 }I2C_Handle_t;
 
 
@@ -74,6 +82,32 @@ typedef struct
 #define I2C_FLAG_TIMEOUT							(1 << I2C_SR1_TIMEOUT)
 #define I2C_FLAG_SMBALERT							(1 << I2C_SR1_SMBALERT)
 
+/*
+ * @I2C Repeated Start Enable/Disable macros
+ */
+#define I2C_ENABLE_SR					SET
+#define I2C_DISABLE_SR					RESET
+
+/*
+ * @I2C_application_state
+ */
+#define I2C_READY						0
+#define I2C_BUSY_IN_RX					1
+#define I2C_BUSY_IN_TX					2
+
+/*
+ * Possible I2C application events macros
+ */
+#define I2C_EV_TX_CMPLT					0
+#define I2C_EV_RX_CMPLT					1
+#define I2C_EV_STOP						2
+#define I2C_ERROR_BERR					3
+#define I2C_ERROR_ARLO					4
+#define I2C_ERROR_AF					5
+#define I2C_ERROR_OVR   				6
+#define I2C_ERROR_TIMEOUT 				7
+#define I2C_EV_DATA_REQ					8
+#define I2C_EV_DATA_RCV					9
 
 
 /*********************************************************************************************************************
@@ -102,9 +136,24 @@ void I2C_DeInit(I2C_RegDef_t *pI2Cx);
 uint8_t I2C_GetFlagStatus(I2C_RegDef_t *pI2Cx, uint32_t FlagName);
 
 /*
- * Data send and receive
+ * Data send and receive(Polling Based)
  */
-void I2C_MasterSendData(I2C_Handle_t *pI2CHandle, uint8_t *pTxbuffer, uint32_t len, uint8_t SlaveAddr);
+void I2C_MasterSendData(I2C_Handle_t *pI2CHandle, uint8_t *pTxbuffer, uint32_t len, uint8_t SlaveAddr, uint8_t Sr);
+void I2C_MasterReceiveData(I2C_Handle_t *pI2CHandle, uint8_t *pRxbuffer, uint32_t len, uint8_t SlaveAddr, uint8_t Sr);
+
+/*
+ * Data send and receive(Interrupt Based)
+ */
+uint8_t I2C_MasterSendDataIT(I2C_Handle_t *pI2CHandle, uint8_t *pTxbuffer, uint32_t len, uint8_t SlaveAddr, uint8_t Sr);
+uint8_t I2C_MasterReceiveDataIT(I2C_Handle_t *pI2CHandle, uint8_t *pRxbuffer, uint32_t len, uint8_t SlaveAddr, uint8_t Sr);
+
+
+void I2C_SlaveSendData(I2C_RegDef_t *pI2Cx, uint8_t data);
+uint8_t I2C_SlaveReceiveData(I2C_RegDef_t *pI2Cx);
+
+
+void I2C_CloseSendData(I2C_Handle_t *pI2CHandle);
+void I2C_CloseReceiveData(I2C_Handle_t *pI2CHandle);
 
 
 /*
@@ -112,6 +161,8 @@ void I2C_MasterSendData(I2C_Handle_t *pI2CHandle, uint8_t *pTxbuffer, uint32_t l
  */
 void I2C_IRQ_IntConfig(uint8_t IRQNumber, uint8_t EnOrDis);
 void I2C_IRQPriorityConfig(uint8_t IRQNumber, uint8_t IRQPriority);
+void I2C_EV_IRQHandling(I2C_Handle_t *pI2CHandle);
+void I2C_ER_IRQHandling(I2C_Handle_t *pI2CHandle);
 
 
 
@@ -125,6 +176,9 @@ __weak void I2C_ApplicationEventCallback(I2C_Handle_t *pI2CHandle, uint8_t AppEv
  * Other peripheral control APIs
  */
 void I2C_PeripheralControl(I2C_RegDef_t *pI2Cx, uint8_t EnOrDis);
+void I2C_ManageAcking(I2C_RegDef_t *pI2Cx, uint8_t EnOrDis);
+void I2C_GenerateStopCondition(I2C_RegDef_t *pI2Cx);
+void I2C_SlaveEnableDisableCallbackEvents(I2C_RegDef_t *pI2Cx, uint8_t EnOrDis);
 
 
 #endif /* INC_STM32F407XX_I2C_DRIVER_H_ */

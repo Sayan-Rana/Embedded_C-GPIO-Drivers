@@ -331,6 +331,7 @@ void SPI2_GPIOInit(void)
 	SPIPins.GPIO_PinConfig.GPIO_PuPdControl = GPIO_PIN_PU;
 	SPIPins.GPIO_PinConfig.GPIO_PinSpeed = GPIO_SPEED_FAST;
 
+
 	// NSS pin
 	SPIPins.GPIO_PinConfig.GPIO_PinNumber  = GPIO_PIN_NO_12;
 	GPIO_Init(&SPIPins);
@@ -357,7 +358,7 @@ void SPI2_Init(void)
 	SPI2handle.pSPIx = SPI2;
 	SPI2handle.SPIConfig.SPI_BusConfig = SPI_BUS_CONFIG_FD;
 	SPI2handle.SPIConfig.SPI_DeviceMode = SPI_DEVICE_MODE_MASTER;
-	SPI2handle.SPIConfig.SPI_SclkSpeed = SPI_SCLK_SPEED_DIV8;	// Generate sclk 8MHz
+	SPI2handle.SPIConfig.SPI_SclkSpeed = SPI_SCLK_SPEED_DIV16;	// Generate sclk 1MHz
 	SPI2handle.SPIConfig.SPI_DFF = SPI_DFF_8BIT;
 	SPI2handle.SPIConfig.SPI_CPOL = SPI_CPOL_LOW;
 	SPI2handle.SPIConfig.SPI_CPHA = SPI_CPHA_LOW;
