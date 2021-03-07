@@ -289,12 +289,12 @@ typedef struct
 #define I2C3							((I2C_RegDef_t*) I2C3_BASEADDR)
 
 // USART
-#define USART1							((USART_Regdef_t*) USART1_BASEADDR)
-#define USART2							((USART_Regdef_t*) USART2_BASEADDR)
-#define USART3							((USART_Regdef_t*) USART3_BASEADDR)
-#define UART4							((USART_Regdef_t*)  UART4_BASEADDR)
-#define UART5							((USART_Regdef_t*)  UART5_BASEADDR)
-#define USART6							((USART_Regdef_t*) USART6_BASEADDR)
+#define USART1							((USART_RegDef_t*) USART1_BASEADDR)
+#define USART2							((USART_RegDef_t*) USART2_BASEADDR)
+#define USART3							((USART_RegDef_t*) USART3_BASEADDR)
+#define UART4							((USART_RegDef_t*)  UART4_BASEADDR)
+#define UART5							((USART_RegDef_t*)  UART5_BASEADDR)
+#define USART6							((USART_RegDef_t*) USART6_BASEADDR)
 
 
 /*
@@ -745,6 +745,7 @@ typedef struct
 #include "stm32f407xx_SPI_driver.h"
 #include "stm32f407xx_I2C_driver.h"
 #include "stm32f407xx_USART_driver.h"
+#include "stm32f407xx_RCC_driver.h"
 
 
 #endif /* INC_STM32F407XX_H_ */

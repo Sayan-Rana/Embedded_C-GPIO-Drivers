@@ -18,11 +18,6 @@ static void I2C_MasterHandleRXNEInterrupt(I2C_Handle_t *pI2CHandle);
 static void I2C_MasterHandleTXEInterrupt(I2C_Handle_t *pI2CHandle);
 
 
-// Array to hold AHB Prescaler values
-uint16_t AHB_PreScaler[8] = {2,4,8,16,64,128,256,512};
-
-// Array to hold APB Prescaler values
-uint8_t APB1_PreScaler[4] = {2,4,8,16};
 
 /*
  **************************************************************************************************************************************
@@ -241,83 +236,6 @@ void I2C_PeriClockControl(I2C_RegDef_t *pI2Cx, uint8_t EnOrDis)
 			I2C3_PCLK_DI();
 		}
 	}
-}
-
-
-
-uint32_t RCC_GetPLLOutputClock()
-{
-	// Not implemented in this program
-	return 0;
-}
-
-
-
-/****************************************************************************************
- *	@fn                  - RCC_GetPCLK1Value
- *
- *	@brief               - This function will return the peripheral clock value
- *
- *	@param[in]           - none
- *
- *	@return              - Clock Frequency in MHz
- *
- *	@note                - none
- *
- */
-uint32_t RCC_GetPCLK1Value(void)
-{
-	uint32_t pclk1, SystemClk;
-	uint8_t clkSrc, temp, ahbp, apb1p;
-
-	// Checking 2nd and 3rd bit of RCC Clock configuration register for Clock source.
-	clkSrc = ((RCC->CFGR >> 2) & 0x03);
-
-	if(clkSrc == 0)
-	{
-		// HSI oscillator used as the system clock
-		SystemClk = 16000000;
-	}else if(clkSrc == 1)
-	{
-		// HSE oscillator used as the system clock
-		SystemClk = 8000000;
-	}else if(clkSrc == 2)
-	{
-		// PLL used as the system clock
-		SystemClk = RCC_GetPLLOutputClock();
-	}
-
-	// AHB
-	// Checking 4th to 7th bit of RCC Clock configuration register for AHB prescaler.
-	temp = ((RCC->CFGR >> 4) & 0x0F);
-
-	if(temp < 8)
-	{
-		// system clock not divided
-		ahbp = 1;
-	}else
-	{
-		// System clock is divided
-		ahbp = AHB_PreScaler[temp - 8];
-	}
-
-	// APB1
-	// Checking 10th to 12th bit of RCC Clock configuration register for APB1 prescaler.
-	temp = ((RCC->CFGR >> 10) & 0x07);
-
-	if(temp < 4)
-	{
-		// AHB bus clock not divided
-		apb1p = 1;
-	}else
-	{
-		// AHB bus clock is divided
-		apb1p = APB1_PreScaler[temp - 4];
-	}
-
-	pclk1 = ((SystemClk / ahbp) / apb1p);
-
-	return pclk1;
 }
 
 
@@ -698,7 +616,7 @@ void I2C_IRQPriorityConfig(uint8_t IRQNumber, uint8_t IRQPriority)
  *
  *	@return              - Return State of communication (I2C_READY/I2C_BUSY_IN_TX)
  *
- *	@note                - none
+ *	@note                - Interrupt based transmission (Non locking method)
  *
  */
 uint8_t I2C_MasterSendDataIT(I2C_Handle_t *pI2CHandle, uint8_t *pTxbuffer, uint32_t len, uint8_t SlaveAddr, uint8_t Sr)
@@ -740,14 +658,14 @@ uint8_t I2C_MasterSendDataIT(I2C_Handle_t *pI2CHandle, uint8_t *pTxbuffer, uint3
  *	@brief               - This function will receive data from I2C slave device over I2C bus
  *
  *	@param[in]           - Handle structure address
- *	@param[in]           - Transmit buffer address(Where the user given data is stored)
+ *	@param[in]           - Receive buffer address(Where the received data is stored)
  *	@param[in]           - Length of the data in byte
  *	@param[in]           - User given slave address
  *	@param[in]           - Repeated Start enable disable macro
  *
  *	@return              - Return State of communication (I2C_READY/I2C_BUSY_IN_RX)
  *
- *	@note                - none
+ *	@note                - Interrupt based reception (Non blocking method)
  *
  */
 uint8_t I2C_MasterReceiveDataIT(I2C_Handle_t *pI2CHandle, uint8_t *pRxbuffer, uint32_t len, uint8_t SlaveAddr, uint8_t Sr)
