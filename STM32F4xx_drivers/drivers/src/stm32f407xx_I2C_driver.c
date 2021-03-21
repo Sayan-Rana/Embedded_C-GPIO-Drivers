@@ -50,26 +50,37 @@ static void I2C_ClearADDRFlag(I2C_Handle_t *pI2CHandle)
 	{
 		// Device in MASTER mode
 
-		// Check for application state
-		if(pI2CHandle->TxRxState == I2C_BUSY_IN_RX)
+		// Check interrupt bits are enable or not
+		if((pI2CHandle->pI2Cx->I2C_CR2 & (1 << I2C_CR2_ITBUFEN)) && (pI2CHandle->pI2Cx->I2C_CR2 & (1 << I2C_CR2_ITEVTEN)))
 		{
-			if(pI2CHandle->RxSize == 1)
+			// In interrupt mode Check for application state
+			if(pI2CHandle->TxRxState == I2C_BUSY_IN_RX)
 			{
-				// 1. Disable ACKING
-				I2C_ManageAcking(pI2CHandle->pI2Cx, I2C_ACK_DISABLE);
+				if(pI2CHandle->RxSize == 1)
+				{
+					// 1. Disable ACKING
+					I2C_ManageAcking(pI2CHandle->pI2Cx, I2C_ACK_DISABLE);
 
-				// 2. Clear ADDR flag(Read SR1 followed SR2)
-				dummyRead = pI2CHandle->pI2Cx->I2C_SR1;
-				dummyRead = pI2CHandle->pI2Cx->I2C_SR2;
-				(void)dummyRead;
-			}else{
-				// RxSize > 1
-				// 2. Clear ADDR flag(Read SR1 followed SR2)
+					// 2. Clear ADDR flag(Read SR1 followed SR2)
+					dummyRead = pI2CHandle->pI2Cx->I2C_SR1;
+					dummyRead = pI2CHandle->pI2Cx->I2C_SR2;
+					(void)dummyRead;
+				}else
+				{
+					// RxSize > 1
+					// 2. Clear ADDR flag(Read SR1 followed SR2)
+					dummyRead = pI2CHandle->pI2Cx->I2C_SR1;
+					dummyRead = pI2CHandle->pI2Cx->I2C_SR2;
+					(void)dummyRead;
+				}
+			}else if(pI2CHandle->TxRxState == I2C_BUSY_IN_TX)
+			{
+				// Clear the ADDR flag(Read SR1 followed SR2)
 				dummyRead = pI2CHandle->pI2Cx->I2C_SR1;
 				dummyRead = pI2CHandle->pI2Cx->I2C_SR2;
 				(void)dummyRead;
 			}
-		}else if(pI2CHandle->TxRxState == I2C_BUSY_IN_TX)
+		}else
 		{
 			// Clear the ADDR flag(Read SR1 followed SR2)
 			dummyRead = pI2CHandle->pI2Cx->I2C_SR1;
@@ -77,7 +88,8 @@ static void I2C_ClearADDRFlag(I2C_Handle_t *pI2CHandle)
 			(void)dummyRead;
 		}
 
-	}else{
+	}else
+	{
 
 		// Device in SLAVE mode
 		// Clear ADDR flag(Read SR1 followed SR2)
@@ -264,16 +276,19 @@ void I2C_Init(I2C_Handle_t *pI2CHandle)
 	tempReg |= (pI2CHandle->I2C_Config.I2C_ACKControl << I2C_CR1_ACK);
 	pI2CHandle->pI2Cx->I2C_CR1 = tempReg;
 
+
 	tempReg = 0;
 	// Configure the I2C CR2 register FREQ bits by putting APB1 bus clock frequency
 	tempReg |= (RCC_GetPCLK1Value() / 1000000U);  // Divided by zero because FREQ bat can only take value. Example, for 16000000(16MHz) it will take 16 only.
 	pI2CHandle->pI2Cx->I2C_CR2 = (tempReg & 0x3F);  // Further masking for safety purpose, only 6bit is valid.
+
 
 	tempReg = 0;
 	// Program the device own address on I2C OAR1 register
 	tempReg |= (pI2CHandle->I2C_Config.I2C_DeviceAddress << I2C_OAR1_ADD7_1);
 	tempReg |= (1 << 14); // Ref. by the reference manual
 	pI2CHandle->pI2Cx->I2C_OAR1 = tempReg;
+
 
 	// CCR calculation
 	uint16_t ccr_value = 0;
@@ -307,7 +322,9 @@ void I2C_Init(I2C_Handle_t *pI2CHandle)
 		tempReg |= (ccr_value & 0xFFF);
 	}
 
+
 	pI2CHandle->pI2Cx->I2C_CCR = tempReg;
+
 
 	// TRISE configuration
 	/* Checking the mode(std/fast) */
@@ -556,7 +573,7 @@ void I2C_IRQ_IntConfig(uint8_t IRQNumber, uint8_t EnOrDis)
 		}else if(IRQNumber > 63 && IRQNumber <= 95)
 		{
 			// Program ISER2 register
-			*NVIC_ISER2 |= (1 << (IRQNumber % 32));
+			*NVIC_ISER2 |= (1 << (IRQNumber % 64));
 		}
 	}else{
 		if(IRQNumber >= 0 && IRQNumber <= 31)
@@ -570,7 +587,7 @@ void I2C_IRQ_IntConfig(uint8_t IRQNumber, uint8_t EnOrDis)
 		}else if(IRQNumber > 63 && IRQNumber <= 95)
 		{
 			// Program ICER2 register
-			*NVIC_ICER2 |= (1 << (IRQNumber % 32));
+			*NVIC_ICER2 |= (1 << (IRQNumber % 64));
 		}
 	}
 }

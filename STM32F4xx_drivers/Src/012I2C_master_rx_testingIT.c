@@ -12,8 +12,8 @@
 #include <stm32f407xx.h>
 
 /*
- * PB6-------> SCL
- * PB7-------> SDA
+ * PB10-------> SCL
+ * PB11-------> SDA
  */
 
 // Flag Variable
@@ -25,7 +25,7 @@ uint8_t RxComplt = RESET;
 #define SLAVE_ADDR			0x68
 
 
-I2C_Handle_t I2C1Handle;
+I2C_Handle_t I2C2Handle;
 
 // rcv_buffer
 char rcv_buf[32];
@@ -52,7 +52,7 @@ void GPIO_ButtonInit(void)
 }
 
 
-void I2C1_GPIOInit(void)
+void I2C2_GPIOInit(void)
 {
 	GPIO_Handle_t I2CPins;
 
@@ -64,24 +64,24 @@ void I2C1_GPIOInit(void)
 	I2CPins.GPIO_PinConfig.GPIO_PinSpeed = GPIO_SPEED_FAST;
 
 	// SCL
-	I2CPins.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_6;
+	I2CPins.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_10;
 	GPIO_Init(&I2CPins);
 
 	// SDA
-	I2CPins.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_7;
+	I2CPins.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_11;
 	GPIO_Init(&I2CPins);
 }
 
 
-void I2C1_Init(void)
+void I2C2_Init(void)
 {
-	I2C1Handle.pI2Cx = I2C1;
-	I2C1Handle.I2C_Config.I2C_ACKControl = I2C_ACK_ENABLE;
-	I2C1Handle.I2C_Config.I2C_DeviceAddress = MY_ADDR;
-	I2C1Handle.I2C_Config.I2C_FMDutyCycle = I2C_FM_DUTY_2;
-	I2C1Handle.I2C_Config.I2C_SCLSpeed = I2C_SCL_SPEED_SM;
+	I2C2Handle.pI2Cx = I2C2;
+	I2C2Handle.I2C_Config.I2C_ACKControl = I2C_ACK_ENABLE;
+	I2C2Handle.I2C_Config.I2C_DeviceAddress = MY_ADDR;
+	I2C2Handle.I2C_Config.I2C_FMDutyCycle = I2C_FM_DUTY_2;
+	I2C2Handle.I2C_Config.I2C_SCLSpeed = I2C_SCL_SPEED_SM;
 
-	I2C_Init(&I2C1Handle);
+	I2C_Init(&I2C2Handle);
 }
 
 
@@ -89,26 +89,26 @@ int main()
 {
 	uint8_t commandCode, len;
 
-	printf("Hello World!\n");
+	printf("Communication started\n");
 
 	//GPIO Button init
 	GPIO_ButtonInit();
 
 	// I2C pin init
-	I2C1_GPIOInit();
+	I2C2_GPIOInit();
 
 	// I2C Peripheral configuration
-	I2C1_Init();
+	I2C2_Init();
 
 	// I2C IRQ configuration
-	I2C_IRQ_IntConfig(IRQ_NO_I2C1_EV, ENABLE);
-	I2C_IRQ_IntConfig(IRQ_NO_I2C1_ER, ENABLE);
+	I2C_IRQ_IntConfig(IRQ_NO_I2C2_EV, ENABLE);
+	I2C_IRQ_IntConfig(IRQ_NO_I2C2_ER, ENABLE);
 
 	// Enable the I2C peripheral
-	I2C_PeripheralControl(I2C1, ENABLE);
+	I2C_PeripheralControl(I2C2, ENABLE);
 
 	// Enabling ACK after PE = 1;
-	I2C_ManageAcking(I2C1, I2C_ACK_ENABLE);
+	I2C_ManageAcking(I2C2, I2C_ACK_ENABLE);
 
 	// Wait for button press
 	while(1)
@@ -122,18 +122,18 @@ int main()
 		commandCode = 0x51;		// Command code to get length information from slave
 
 		// Master send command code to slave for length information
-		while(I2C_MasterSendDataIT(&I2C1Handle, &commandCode, 1, SLAVE_ADDR,I2C_ENABLE_SR) != I2C_READY);
+		while(I2C_MasterSendDataIT(&I2C2Handle, &commandCode, 1, SLAVE_ADDR,I2C_ENABLE_SR) != I2C_READY);
 
 		// Master reading response(Length info) from slave
-		while(I2C_MasterReceiveDataIT(&I2C1Handle, &len, 1, SLAVE_ADDR, I2C_ENABLE_SR) != I2C_READY);
+		while(I2C_MasterReceiveDataIT(&I2C2Handle, &len, 1, SLAVE_ADDR, I2C_ENABLE_SR) != I2C_READY);
 
 		commandCode = 0x52;		// Command code to initiate the data reception from slave
 
 		// Master sends command code to slave for length number of data reception
-		while(I2C_MasterSendDataIT(&I2C1Handle, &commandCode, 1, SLAVE_ADDR, I2C_ENABLE_SR) != I2C_READY);
+		while(I2C_MasterSendDataIT(&I2C2Handle, &commandCode, 1, SLAVE_ADDR, I2C_ENABLE_SR) != I2C_READY);
 
 		// Master receiving data from slave(length of data = len)
-		while(I2C_MasterReceiveDataIT(&I2C1Handle, (uint8_t*)rcv_buf, len, SLAVE_ADDR, I2C_DISABLE_SR) != I2C_READY);
+		while(I2C_MasterReceiveDataIT(&I2C2Handle, (uint8_t*)rcv_buf, len, SLAVE_ADDR, I2C_DISABLE_SR) != I2C_READY);
 
 		RxComplt = RESET;
 
@@ -151,21 +151,20 @@ int main()
 }
 
 
-void I2C1_EV_IRQHandler(void)
+void I2C2_EV_IRQHandler(void)
 {
-	I2C_EV_IRQHandling(&I2C1Handle);
+	I2C_EV_IRQHandling(&I2C2Handle);
 }
 
 
-void I2C1_ER_IRQHandler(void)
+void I2C2_ER_IRQHandler(void)
 {
-	I2C_ER_IRQHandling(&I2C1Handle);
+	I2C_ER_IRQHandling(&I2C2Handle);
 }
 
 
 void I2C_ApplicationEventCallback(I2C_Handle_t *pI2CHandle, uint8_t AppEvent)
 {
-	printf("Hello World!\n");
 	if(AppEvent == I2C_EV_TX_CMPLT)
 	{
 		printf("Tx is completed\n");
@@ -180,10 +179,10 @@ void I2C_ApplicationEventCallback(I2C_Handle_t *pI2CHandle, uint8_t AppEvent)
 		printf("ERROR : Ack Failure\n");
 		// In master ACK failure happens when slave fails to send ACK for the byte
 		// sent from master.
-		I2C_CloseSendData(pI2CHandle);
+		I2C_CloseSendData(&I2C2Handle);
 
 		// Generate stop condition to release the bus
-		I2C_GenerateStopCondition(I2C1);
+		I2C_GenerateStopCondition(I2C2);
 
 		// Hang in infinite loop
 		while(1);

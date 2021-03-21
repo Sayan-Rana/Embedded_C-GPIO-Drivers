@@ -117,7 +117,7 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 	{
 		// Its a non interrupt mode
 		temp = (pGPIOHandle->GPIO_PinConfig.GPIO_PinMode << (2 * pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber));
-		pGPIOHandle->pGPIOx->MODER &= ~(0x03 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);	//Clearing the required bit
+		pGPIOHandle->pGPIOx->MODER &= ~(0x03 << (2 * pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber));	//Clearing the required bit
 		pGPIOHandle->pGPIOx->MODER |= temp;	//Setting the required bit
 
 	}else{
@@ -156,6 +156,7 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 			EXTI->EXTI_RTSR |= (1 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);	// Second, setting the bit
 		}
 
+
 		// 3. Configure the GPIO port selection in SYSCFG_EXTICR
 		uint8_t reg = (pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber / 4);
 		uint8_t bitPosi = ((pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber % 4) * 4);
@@ -169,6 +170,7 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 		// Setting relevant bit position inside EXTICR
 		SYSCFG->EXTICR[reg] = (portcode << bitPosi);
 
+
 		// 4. Enable the External Interrupt(EXTI) delivery using IMR(Interrupt mask register)
 		EXTI->EXTI_IMR &= ~(1 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);	// First, clearing the bit
 		EXTI->EXTI_IMR |= (1 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);	// Second, setting the bit
@@ -178,14 +180,14 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 
 	// 2. Configure the speed
 	temp = (pGPIOHandle->GPIO_PinConfig.GPIO_PinSpeed << (2 * pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber));
-	pGPIOHandle->pGPIOx->OSPEEDR &= ~(0x03 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);	//Clearing the required bit
+	pGPIOHandle->pGPIOx->OSPEEDR &= ~(0x03 << ( 2* pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber));	//Clearing the required bit
 	pGPIOHandle->pGPIOx->OSPEEDR |= temp;	//Setting the required bit
 
 	temp = 0;
 
 	// 3. Configure the Pull up Pull down settings
 	temp = (pGPIOHandle->GPIO_PinConfig.GPIO_PuPdControl << (2 * pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber));
-	pGPIOHandle->pGPIOx->PUPDR &= ~(0x03 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);	//Clearing the required bit
+	pGPIOHandle->pGPIOx->PUPDR &= ~(0x03 << ( 2 * pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber));	//Clearing the required bit
 	pGPIOHandle->pGPIOx->PUPDR |= temp;	//Setting the required bit
 
 	temp = 0;
@@ -207,6 +209,7 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 		pGPIOHandle->pGPIOx->AFR[temp1] &= ~(0x0F << (4 * temp2));		//Clearing the required bit
 		pGPIOHandle->pGPIOx->AFR[temp1] |= (pGPIOHandle->GPIO_PinConfig.GPIO_PinAltFunction << (4 * temp2));	//Setting the required bit
 	}
+
 }
 
 
